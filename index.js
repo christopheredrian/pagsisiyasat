@@ -1,10 +1,28 @@
 const express = require("express");
-require('./services/passport');
+const mongoose = require("mongoose");
+const cookieSession = require("cookie-session");
+const passport = require("passport");
+
+const keys = require("./config/keys");
+require("./models/User");
+require("./services/passport");
+
+// Connect to mongodb
+mongoose.connect(keys.mongoURI);
 
 const app = express();
+// Tells express to use cookies
+app.use(
+  cookieSession({
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    keys: [keys.cookieKey]
+  })
+);
+// Tells passport to use cookies
+app.use(passport.initialize());
+app.use(passport.session());
 
-require('./routes/authRoutes')(app);
-
+require("./routes/authRoutes")(app);
 
 app.get("/", (req, res) => {
   res.send({ name: "cee!" });
